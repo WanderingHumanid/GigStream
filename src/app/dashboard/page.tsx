@@ -89,7 +89,7 @@ export default function Dashboard() {
                     </div>
 
                     {/* Horizontal AI Feed */}
-                    <AIInsightsFeed dailyDeliveries={dailyDeliveries} currentBalance={currentBalance} />
+                    <AIInsightsFeed dailyDeliveries={dailyDeliveries} currentBalance={currentBalance} totalStreamed={currentBalance} />
 
                     <div className="w-full h-px bg-gray-800/50"></div>
 

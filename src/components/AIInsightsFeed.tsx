@@ -7,9 +7,11 @@ import { useAiCoach } from "@/hooks/useAiCoach";
 interface AIInsightsFeedProps {
     dailyDeliveries: number;
     currentBalance?: number;
+    streakDays?: number; // Adding streak support for future or simplified mock
+    totalStreamed?: number;
 }
 
-export default function AIInsightsFeed({ dailyDeliveries }: AIInsightsFeedProps) {
+export default function AIInsightsFeed({ dailyDeliveries, totalStreamed = 0 }: AIInsightsFeedProps) {
     // Dynamic Logic for "Power Up" card
     const extraDeliveries = 3;
     const daysSaved = Math.round((extraDeliveries / Math.max(1, dailyDeliveries)) * 20); // Mock logic
@@ -30,15 +32,15 @@ export default function AIInsightsFeed({ dailyDeliveries }: AIInsightsFeedProps)
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="bg-gradient-to-br from-purple-900/40 to-indigo-900/40 border border-purple-500/30 rounded-2xl p-6 relative overflow-hidden group h-full"
+                    className="bg-gradient-to-br from-emerald-900/40 to-teal-900/40 border border-emerald-500/30 rounded-2xl p-6 relative overflow-hidden group h-full"
                 >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl group-hover:bg-purple-500/30 transition-all"></div>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl group-hover:bg-emerald-500/30 transition-all"></div>
 
                     <div className="flex items-start justify-between mb-4 relative z-10">
-                        <div className="bg-purple-500/20 p-2 rounded-lg text-purple-400">
-                            <Zap size={20} className="fill-purple-500/50" />
+                        <div className="bg-emerald-500/20 p-2 rounded-lg text-emerald-400">
+                            <Zap size={20} className="fill-emerald-500/50" />
                         </div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-purple-300 bg-purple-500/10 px-2 py-1 rounded-full border border-purple-500/20">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">
                             AI Coach
                         </span>
                     </div>
@@ -85,7 +87,7 @@ export default function AIInsightsFeed({ dailyDeliveries }: AIInsightsFeedProps)
                     </div>
                     <h4 className="text-white font-bold mb-2">on Fire!</h4>
                     <p className="text-sm text-gray-400 leading-relaxed">
-                        You've streamed for <span className="text-orange-500 font-bold">5 days straight</span>. You're in the top 10% of consistent savers in your city!
+                        Total Value Streamed: <span className="text-orange-500 font-bold">${totalStreamed.toFixed(2)}</span>. You're actively building your future!
                     </p>
                 </motion.div>
             </div>

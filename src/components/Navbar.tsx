@@ -27,6 +27,8 @@ export default function Navbar() {
                             <div className="w-px h-4 bg-gray-800 mx-2"></div>
                             <NavLink href="/yield" label="Yield" />
                             <div className="w-px h-4 bg-gray-800 mx-2"></div>
+                            <NavLink href="/help" label="Help" />
+                            <div className="w-px h-4 bg-gray-800 mx-2"></div>
                             <NavLink href="/pension" label="Pension" />
                         </div>
 

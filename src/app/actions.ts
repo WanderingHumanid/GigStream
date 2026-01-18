@@ -198,3 +198,44 @@ export async function getTotalDeliveries() {
         return { success: false, error: error.message };
     }
 }
+
+export async function getUserStats() {
+    const userId = (await cookies()).get('user_id')?.value;
+    if (!userId) return { success: true, data: { totalEarnings: 0, totalStreamed: 0, pending: 0, netWorth: 0, yieldGained: 0 } };
+
+    try {
+        const stmt = db.prepare(`
+            SELECT 
+                SUM(amount) as totalEarnings,
+                SUM(pension_cut) as totalStreamed
+            FROM deliveries 
+            WHERE user_id = ?
+        `);
+        const result = stmt.get(userId) as { totalEarnings: number, totalStreamed: number };
+
+        const totalEarnings = result.totalEarnings || 0;
+        const totalStreamed = result.totalStreamed || 0;
+        const pending = totalEarnings - totalStreamed; // Money kept by user
+
+        // Net Worth Logic: 
+        // For this app context: Net Worth = (Streamed * 1.08) + Pending cash?
+        // Or simply Total Earnings so far?
+        // Let's define Net Worth as: Total Earnings (Realized) + Yield (Unrealized)
+        // Yield estimate: Streamed * 0.04 (4% gained so far mock)
+        const yieldGained = totalStreamed * 0.04;
+        const netWorth = totalEarnings + yieldGained;
+
+        return {
+            success: true,
+            data: {
+                totalEarnings,
+                totalStreamed,
+                pending,
+                netWorth,
+                yieldGained
+            }
+        };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}

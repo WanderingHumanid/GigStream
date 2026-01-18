@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Zap, TrendingUp, Flame, ArrowRight } from "lucide-react";
 import { useAiCoach } from "@/hooks/useAiCoach";
+import InfoTooltip from "./InfoTooltip";
 
 interface AIInsightsFeedProps {
     dailyDeliveries: number;
@@ -67,7 +68,9 @@ export default function AIInsightsFeed({ dailyDeliveries, totalStreamed = 0 }: A
                             <TrendingUp size={20} />
                         </div>
                     </div>
-                    <h4 className="text-white font-bold mb-2">Market Watch</h4>
+                    <h4 className="text-white font-bold mb-2 flex items-center">
+                        Market Watch <InfoTooltip text="Live feed from Aave Lending Pool (Mock for Demo)." />
+                    </h4>
                     <p className="text-sm text-gray-400 leading-relaxed">
                         Aave yield just increased to <span className="text-emerald-500 font-bold">5.2%</span>. Your projected 20-year total just grew by <span className="text-white font-bold">+$450</span>.
                     </p>

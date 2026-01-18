@@ -5,8 +5,8 @@ import PensionHero from "@/components/PensionHero";
 import RecentDeliveries from "@/components/RecentDeliveries";
 import { usePensionStream } from "@/hooks/usePensionStream";
 
-export default function PensionPageClient({ initialDailyDeliveries }: { initialDailyDeliveries: number }) {
-    const { currentBalance, isStreaming } = usePensionStream(initialDailyDeliveries);
+export default function PensionPageClient({ initialDailyDeliveries, initialBalance }: { initialDailyDeliveries: number, initialBalance: number }) {
+    const { currentBalance, isStreaming } = usePensionStream(initialDailyDeliveries, initialBalance);
 
     return (
         <main className="min-h-screen bg-[#121212] selection:bg-emerald-500/30">

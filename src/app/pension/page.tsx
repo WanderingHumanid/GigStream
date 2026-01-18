@@ -2,14 +2,17 @@ import Navbar from "@/components/Navbar";
 import PensionHero from "@/components/PensionHero";
 import RecentDeliveries from "@/components/RecentDeliveries";
 import { usePensionStream } from "@/hooks/usePensionStream";
-import { getTodayStats } from "@/app/actions";
+import { getTodayStats, getUserStats } from "@/app/actions";
 import PensionPageClient from "@/components/PensionPageClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function PensionPage() {
     const statsRes = await getTodayStats();
+    const userStatsRes = await getUserStats();
+
     const todayCount = statsRes.success && statsRes.data ? statsRes.data.count : 0;
+    const initialBalance = userStatsRes.success && userStatsRes.data ? userStatsRes.data.totalStreamed : 0;
 
     // We reuse the hook here, though ideally context or global state management 
     // would keep this consistent across pages. For MVP, re-initializing is acceptable visually.
@@ -21,7 +24,10 @@ export default async function PensionPage() {
     // Best approach: Make PensionPage Server Component, move hook usage to a Client Component wrapper or push down.
 
     return (
-        <PensionPageClient initialDailyDeliveries={todayCount} />
+        <PensionPageClient
+            initialDailyDeliveries={todayCount}
+            initialBalance={initialBalance}
+        />
     );
 }
 

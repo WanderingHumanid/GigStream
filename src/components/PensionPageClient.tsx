@@ -4,9 +4,10 @@ import Navbar from "@/components/Navbar";
 import PensionHero from "@/components/PensionHero";
 import RecentDeliveries from "@/components/RecentDeliveries";
 import { usePensionStream } from "@/hooks/usePensionStream";
+import StreamController from "./StreamController";
 
 export default function PensionPageClient({ initialDailyDeliveries, initialBalance }: { initialDailyDeliveries: number, initialBalance: number }) {
-    const { currentBalance, isStreaming } = usePensionStream(initialDailyDeliveries, initialBalance);
+    const { currentBalance, isStreaming, startGlobalStream, stopGlobalStream } = usePensionStream(initialDailyDeliveries, initialBalance);
 
     return (
         <main className="min-h-screen bg-[#121212] selection:bg-emerald-500/30">
@@ -29,6 +30,12 @@ export default function PensionPageClient({ initialDailyDeliveries, initialBalan
 
                     {/* Sidebar / Extra Info */}
                     <aside className="w-full lg:w-80 space-y-6">
+                        <StreamController
+                            onStartStream={startGlobalStream}
+                            onStopStream={stopGlobalStream}
+                            isStreaming={isStreaming}
+                        />
+
                         <div className="bg-[#18181b] border border-gray-800 rounded-2xl p-6">
                             <h3 className="font-bold text-white mb-3">How it works</h3>
                             <p className="text-sm text-gray-400 mb-4">

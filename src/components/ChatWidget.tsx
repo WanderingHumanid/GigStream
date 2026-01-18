@@ -151,7 +151,7 @@ export default function ChatWidget() {
                     "w-14 h-14 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.3)] flex items-center justify-center transition-all duration-300",
                     isOpen
                         ? "bg-gray-800 text-white rotate-90"
-                        : "bg-emerald-500 text-white hover:bg-emerald-400"
+                        : "bg-emerald-500 text-black hover:bg-emerald-400"
                 )}
             >
                 {isOpen ? <X size={24} /> : <MessageSquare size={24} fill="currentColor" />}

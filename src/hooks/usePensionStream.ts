@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 export function usePensionStream(dailyDeliveries: number = 12, initialBalance: number = 0) {
     // Start with server-provided real data
     const [currentBalance, setCurrentBalance] = useState(initialBalance);
-    const [isStreaming, setIsStreaming] = useState(true);
+    const [isStreaming, setIsStreaming] = useState(false);
 
     // Simulation effect to keep the "live" feel in the UI
     useEffect(() => {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { Web3Provider } from "@/context/Web3Provider";
 import { Toaster } from "sonner";
 import { TransactionProvider } from "@/context/TransactionContext";
 import ChatWidget from "@/components/ChatWidget";
@@ -22,10 +23,12 @@ export default function RootLayout({
         <html lang="en">
             <body className={outfit.className}>
                 <AuthProvider>
-                    <TransactionProvider>
-                        {children}
-                        <ChatWidget />
-                    </TransactionProvider>
+                    <Web3Provider>
+                        <TransactionProvider>
+                            {children}
+                            <ChatWidget />
+                        </TransactionProvider>
+                    </Web3Provider>
                 </AuthProvider>
                 <Toaster position="top-center" theme="dark" />
             </body>

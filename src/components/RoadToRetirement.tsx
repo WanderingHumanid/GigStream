@@ -43,9 +43,11 @@ const MILESTONE_SETS = {
 export default function RoadToRetirement({ currentBalance }: RoadToRetirementProps) {
     const { user } = useAuth();
     // Default to 'default' set if no goal or invalid key
-    const currentGoal = user?.retirementGoal as keyof typeof MILESTONE_SETS || 'default';
+    // @ts-ignore
+    const currentGoal = user?.retirement_goal as keyof typeof MILESTONE_SETS || 'default';
     const milestones = MILESTONE_SETS[currentGoal] || MILESTONE_SETS['default'];
     const maxAmount = milestones[milestones.length - 1].amount;
+    const progress = Math.min((currentBalance / maxAmount) * 100, 100);
 
     return (
         <div className="w-full bg-[#18181b] border border-gray-800 rounded-3xl p-8 relative overflow-hidden">

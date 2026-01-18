@@ -1,7 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { usePensionStream } from "@/hooks/usePensionStream";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useTransactions } from "@/context/TransactionContext"; // Import context
+import { Coins, Plus } from "lucide-react";
 
 interface PensionHeroProps {
     dailyDeliveries: number;
@@ -10,17 +12,12 @@ interface PensionHeroProps {
 }
 
 export default function PensionHero({ dailyDeliveries, currentBalance, isStreaming }: PensionHeroProps) {
-    // const { currentBalance, isStreaming } = usePensionStream(dailyDeliveries); // Lifted to Dashboard
-
+    const { addTransaction } = useTransactions();
+    const [showCoin, setShowCoin] = useState(false);
 
     // Financial Health Calculations
-    // Gamification: Increase speed of calculation to show progress. 
-    // In real life this is slow, but for "Hackathon Mode" we scale it up.
     const dailyCostOfLiving = 85;
-    // We show "projected days funded" based on POTENTIAL, not just actual balance, to make it look exciting.
-    // Or just make the balance bigger? No, let's keep balance realistic but show days funded with high precision.
     const daysFunded = currentBalance / dailyCostOfLiving;
-
     const yearOneGoal = 500;
     const progressPercent = Math.min((currentBalance / yearOneGoal) * 100, 100);
 
@@ -32,8 +29,45 @@ export default function PensionHero({ dailyDeliveries, currentBalance, isStreami
     }
     const health = getHealthScore();
 
+    // Handler to simulate a delivery and trigger animation
+    const handleSimulateDelivery = () => {
+        // 1. Trigger Animation
+        setShowCoin(true);
+        setTimeout(() => setShowCoin(false), 1000); // Reset after 1s
+
+        // 2. Add Transaction (Mock)
+        addTransaction({
+            type: 'earning',
+            amount: 15.00,
+            description: 'Instant Gig Payment'
+        });
+
+        // Note: Real balance update would happen via context/stream, 
+        // but for now the visuals are decoupled slightly for the animation.
+    };
+
     return (
-        <div className="flex flex-col items-center justify-center py-10 md:py-20 text-center space-y-8 w-full max-w-4xl mx-auto px-6">
+        <div className="flex flex-col items-center justify-center py-10 md:py-16 text-center space-y-8 w-full max-w-4xl mx-auto px-6 relative">
+
+            {/* ------------------------------------------------ */}
+            {/* FLYING COIN ANIMATION LAYER                      */}
+            {/* ------------------------------------------------ */}
+            <AnimatePresence>
+                {showCoin && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 100, scale: 0.5 }}
+                        animate={{ opacity: 1, y: -50, scale: 1.2 }}
+                        exit={{ opacity: 0, y: -100 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        className="absolute z-50 pointer-events-none text-yellow-400 flex items-center justify-center"
+                        style={{ left: '50%', top: '40%' }}
+                    >
+                        <Coins size={48} className="drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]" />
+                        <span className="absolute top-0 -right-8 text-white font-bold text-lg">+$0.15</span>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
 
             {/* Streaming Pill */}
             <motion.div
@@ -53,19 +87,22 @@ export default function PensionHero({ dailyDeliveries, currentBalance, isStreami
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
 
                 {/* Metric Card 1: Balance & Score */}
-                <div className="bg-[#18181b] border border-gray-800 rounded-3xl p-8 flex flex-col items-center justify-center relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="text-emerald-500">
-                            <path d="M12 2v20M2 12h20" />
-                        </svg>
+                <div className="bg-[#18181b] border border-gray-800 rounded-3xl p-8 flex flex-col items-center justify-center relative overflow-hidden group">
+                    {/* Coin Bucket Target Area */}
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Coins size={100} className="text-emerald-500" />
                     </div>
+
                     <h2 className="text-gray-400 font-medium text-sm mb-2">Pension Balance</h2>
-                    <div className="text-5xl md:text-6xl font-black text-white tracking-tighter tabular-nums mb-4">
-                        ${currentBalance.toFixed(5)}
+                    <div className="flex items-baseline gap-1 mb-4">
+                        <span className="text-5xl md:text-6xl font-black text-white tracking-tighter tabular-nums">
+                            {currentBalance.toFixed(5)}
+                        </span>
+                        <span className="text-xl font-bold text-gray-500">USDC</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-900/50 px-3 py-1.5 rounded-lg border border-gray-800">
-                        <span>Financial Health Score:</span>
+                        <span>Financial Health:</span>
                         <span className={`${health.color} font-bold`}>{health.label}</span>
                     </div>
                 </div>
@@ -95,7 +132,16 @@ export default function PensionHero({ dailyDeliveries, currentBalance, isStreami
                                 className="h-full bg-emerald-500"
                             />
                         </div>
-                        <p className="text-right text-[10px] text-gray-600 mt-1">${currentBalance.toFixed(0)} / ${yearOneGoal}</p>
+                        {/* Added Simulate Button for Reviewers/Testing */}
+                        <div className="flex justify-between items-center mt-3">
+                            <p className="text-[10px] text-gray-600">${currentBalance.toFixed(0)} / ${yearOneGoal}</p>
+                            <button
+                                onClick={handleSimulateDelivery}
+                                className="flex items-center gap-1 text-[10px] bg-white/5 hover:bg-white/10 px-2 py-1 rounded border border-gray-700 text-gray-300 transition-colors"
+                            >
+                                <Plus size={10} /> Simulate Gig
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -107,7 +153,7 @@ export default function PensionHero({ dailyDeliveries, currentBalance, isStreami
                 transition={{ delay: 0.5 }}
                 className="text-gray-500 max-w-md text-sm"
             >
-                <span className="text-gray-300 decoration-emerald-500 underline decoration-1 underline-offset-4">12 deliveries</span> completed today. Your consistent activity is compounding daily.
+                <span className="text-gray-300 decoration-emerald-500 underline decoration-1 underline-offset-4">{dailyDeliveries} deliveries</span> completed today. Your consistent activity is compounding daily.
             </motion.p>
         </div>
     );

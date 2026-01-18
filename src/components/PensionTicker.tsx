@@ -11,7 +11,7 @@ export default function PensionTicker() {
         const fetchBalance = async () => {
             const res = await getPensionBalance();
             if (res.success) {
-                setBalance(res.data as number);
+                setBalance((res as any).balance);
             }
         };
         fetchBalance();

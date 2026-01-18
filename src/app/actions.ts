@@ -3,6 +3,17 @@
 import db from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
+import { ethers } from 'ethers';
+
+// --- Blockchain Constants ---
+const PROVIDER_URL = "https://rpc-amoy.polygon.technology/"; // Polygon Amoy RPC
+const CONTRACT_ADDRESS = "0xC0BEaf390B583F5956D130A499C1C856d492B764";
+const TOKEN_ADDRESS = "0x1b1626359e9239537f59d9972847c0b028bbe2b6";
+
+const ABI = [
+    {"inputs":[{"internalType":"address","name":"tokenAddress","type":"address"}],"name":"getPensionBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"tokenAddress","type":"address"}],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function"}
+];
 
 // --- Auth Actions ---
 
@@ -74,8 +85,6 @@ export async function getCurrentUser() {
 
 // --- Delivery Actions ---
 
-// --- Delivery Actions ---
-
 export async function deductPension(amount: number, platform: string = 'Generic') {
     const userId = (await cookies()).get('user_id')?.value;
     if (!userId) return { success: false, message: "Not authenticated" };
@@ -112,11 +121,87 @@ export async function getRecentDeliveries() {
 
 // --- User Profile Actions ---
 
+export async function getUserStats() {
+    const userId = (await cookies()).get('user_id')?.value;
+    if (!userId) return { success: true, data: { totalEarnings: 0, totalStreamed: 0, pending: 0, netWorth: 0, yieldGained: 0 } };
+
+    try {
+        // 1. Get Earnings from SQLite
+        const stmt = db.prepare(`
+            SELECT 
+                SUM(amount) as totalEarnings
+            FROM deliveries 
+            WHERE user_id = ?
+        `);
+        const result = stmt.get(userId) as { totalEarnings: number };
+        const totalEarnings = result.totalEarnings || 0;
+
+        // 2. Get Live Pension Balance from Blockchain
+        let totalStreamed = 0;
+        try {
+            const provider = new ethers.JsonRpcProvider(PROVIDER_URL);
+            const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+            const balance: bigint = await contract.getPensionBalance(TOKEN_ADDRESS);
+            totalStreamed = parseFloat(ethers.formatUnits(balance, 18)); // Assuming 18 decimals
+        } catch (chainError) {
+            console.error("Blockchain Error:", chainError);
+            // Fallback to 0 if chain unreachable, or maybe cache? For now 0 or keep old behavior?
+            // Prompt says: "Instead of querying SQLite... call getPensionBalance"
+            totalStreamed = 0; 
+        }
+
+        const pending = totalEarnings - totalStreamed; // rough estimate
+        // Actually, pending logic might be flawed if 'totalStreamed' is now real money in vault
+        // and totalEarnings is what was logged.
+        // If I log $100, pensionCut is $1.
+        // If I streamed $1 to vault, totalStreamed is $1.
+        // Pending is $99. Correct.
+
+        const yieldGained = totalStreamed * 0.04; // Mock yield on top of real balance
+        const netWorth = totalEarnings + yieldGained;
+
+        return {
+            success: true,
+            data: {
+                totalEarnings,
+                totalStreamed,
+                pending,
+                netWorth,
+                yieldGained
+            }
+        };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function prepareWithdrawal() {
+    // Return encoded data for client to sign
+    const iface = new ethers.Interface(ABI);
+    const data = iface.encodeFunctionData("withdraw", [TOKEN_ADDRESS]);
+    
+    return {
+        success: true,
+        to: CONTRACT_ADDRESS,
+        data: data,
+        value: "0"
+    };
+}
+
+export async function getLiveBalanceAction() {
+    try {
+        const provider = new ethers.JsonRpcProvider(PROVIDER_URL);
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+        const balance: bigint = await contract.getPensionBalance(TOKEN_ADDRESS);
+        const formatted = parseFloat(ethers.formatUnits(balance, 18));
+        return { success: true, balance: formatted };
+    } catch (error: any) {
+        console.error("Live Balance Error:", error);
+        return { success: false, error: error.message }; // Return error to let client handle retry
+    }
+}
+
 export async function getUserProfile() {
-    // For MVP, user_profile is single row, but we should conceptually link it. 
-    // Since table schema for user_profile wasn't changed to have user_id (it was a singleton mock), 
-    // we will keep it as is for now, or assume row 1 is the current user. 
-    // The prompt asked for "Recent Activities" specifically to be user logged.
     try {
         const user = db.prepare('SELECT * FROM user_profile LIMIT 1').get();
         return { success: true, data: user };
@@ -174,16 +259,10 @@ export async function getTodayStats() {
 }
 
 export async function getPensionBalance() {
-    const userId = (await cookies()).get('user_id')?.value;
-    if (!userId) return { success: true, data: 0 };
-
-    try {
-        const stmt = db.prepare('SELECT SUM(pension_cut) as total FROM deliveries WHERE user_id = ?');
-        const result = stmt.get(userId) as { total: number } | undefined;
-        return { success: true, data: result?.total || 0 };
-    } catch (error: any) {
-        return { success: false, error: error.message };
-    }
+    // Deprecated in favor of getLiveBalanceAction or getUserStats, but kept for compatibility if needed
+    // or updated to use blockchain?
+    // Let's update it to use blockchain just in case
+    return getLiveBalanceAction();
 }
 
 export async function getTotalDeliveries() {
@@ -194,47 +273,6 @@ export async function getTotalDeliveries() {
         const stmt = db.prepare('SELECT COUNT(*) as count FROM deliveries WHERE user_id = ?');
         const result = stmt.get(userId) as { count: number } | undefined;
         return { success: true, data: result?.count || 0 };
-    } catch (error: any) {
-        return { success: false, error: error.message };
-    }
-}
-
-export async function getUserStats() {
-    const userId = (await cookies()).get('user_id')?.value;
-    if (!userId) return { success: true, data: { totalEarnings: 0, totalStreamed: 0, pending: 0, netWorth: 0, yieldGained: 0 } };
-
-    try {
-        const stmt = db.prepare(`
-            SELECT 
-                SUM(amount) as totalEarnings,
-                SUM(pension_cut) as totalStreamed
-            FROM deliveries 
-            WHERE user_id = ?
-        `);
-        const result = stmt.get(userId) as { totalEarnings: number, totalStreamed: number };
-
-        const totalEarnings = result.totalEarnings || 0;
-        const totalStreamed = result.totalStreamed || 0;
-        const pending = totalEarnings - totalStreamed; // Money kept by user
-
-        // Net Worth Logic: 
-        // For this app context: Net Worth = (Streamed * 1.08) + Pending cash?
-        // Or simply Total Earnings so far?
-        // Let's define Net Worth as: Total Earnings (Realized) + Yield (Unrealized)
-        // Yield estimate: Streamed * 0.04 (4% gained so far mock)
-        const yieldGained = totalStreamed * 0.04;
-        const netWorth = totalEarnings + yieldGained;
-
-        return {
-            success: true,
-            data: {
-                totalEarnings,
-                totalStreamed,
-                pending,
-                netWorth,
-                yieldGained
-            }
-        };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

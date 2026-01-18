@@ -17,8 +17,8 @@ export default function AIInsightsFeed({ dailyDeliveries, totalStreamed = 0 }: A
     const extraDeliveries = 3;
     const daysSaved = Math.round((extraDeliveries / Math.max(1, dailyDeliveries)) * 20); // Mock logic
 
-    // AI Coach Integration (Mocking earnings for now based on deliveries)
-    const { aiMessage, loading } = useAiCoach(dailyDeliveries * 15, dailyDeliveries);
+    // AI Coach Integration (Using live blockchain balance)
+    const { aiMessage, loading } = useAiCoach(totalStreamed, dailyDeliveries);
 
     return (
         <div className="w-full">

@@ -1,3 +1,0 @@
-module.exports=[58095,a=>{"use strict";var b=a.i(22918);a.s([],88996),a.i(88996),a.s(["0012eff4928b4e8a47e59514519173bf4de06bd32c",()=>b.getUserProfile,"003bdb09de07ba52ffa3a7088b698781ed3e4d8f8b",()=>b.getCurrentUser,"00afe74bc33365927bc65a2fbb72a05ffa8181c352",()=>b.getPensionBalance,"00dbbdec5100a7872d1d73962ae234324df53daafa",()=>b.logoutAction,"403795641c21af9f9d988cfc2b577ee119f45c9e43",()=>b.updateUserProfile],58095)}];
-
-//# sourceMappingURL=_next-internal_server_app_profile_page_actions_4eb5a9b8.js.map

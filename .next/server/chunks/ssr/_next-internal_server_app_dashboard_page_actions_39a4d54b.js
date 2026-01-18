@@ -1,3 +1,0 @@
-module.exports=[9161,a=>{"use strict";var b=a.i(22918);a.s([],48562),a.i(48562),a.s(["000d2282aa4f16f82628ecb59af552023df1eff7d6",()=>b.getTodayStats,"0012eff4928b4e8a47e59514519173bf4de06bd32c",()=>b.getUserProfile,"003bdb09de07ba52ffa3a7088b698781ed3e4d8f8b",()=>b.getCurrentUser,"00af8b9a97031234ecf1e278a57c5e83fa8091c3cb",()=>b.getRecentDeliveries,"00afe74bc33365927bc65a2fbb72a05ffa8181c352",()=>b.getPensionBalance,"00dbbdec5100a7872d1d73962ae234324df53daafa",()=>b.logoutAction,"60181589afafc4326820c669af38b51d7b4f6786d4",()=>b.logDelivery],9161)}];
-
-//# sourceMappingURL=_next-internal_server_app_dashboard_page_actions_39a4d54b.js.map
